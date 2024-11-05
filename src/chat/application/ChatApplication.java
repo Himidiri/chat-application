@@ -2,7 +2,8 @@ package chat.application;
 
 public class ChatApplication {
   public static void main(String[] args) {
-        ChatWindow user1=new ChatWindow("Sender 01");
-	user1.setVisible(true);
+        ChatController chatController = new ChatController();
+        ChatUser sender1 = new ChatUser("Sender 01", chatController);
+        chatController.addUser(sender1);
     } 
 }

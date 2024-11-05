@@ -1,4 +1,5 @@
 package chat.application;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -9,11 +10,16 @@ public class ChatWindow extends JFrame {
     private JButton btnSend, btnAddUser;
     private JTextArea chatArea;
     private JTextField messageField;
+    private ChatUser user;
+    private ChatController chatController;
 
-    ChatWindow(String userName) {
-        
+    ChatWindow(ChatUser user, ChatController chatController) {
+        this.user = user;
+        this.chatController = chatController;
+        this.chatArea = user.getChatArea();
+
         setSize(650, 430);
-        setTitle(userName);
+        setTitle(user.getName());
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setResizable(false);
         setLocationRelativeTo(null);
@@ -21,7 +27,7 @@ public class ChatWindow extends JFrame {
         // Title and Add User Button 
         JPanel titlePanel = new JPanel(new BorderLayout());
 
-        lblTitle = new JLabel(userName);
+        lblTitle = new JLabel(user.getName());
         lblTitle.setFont(new Font("", 1, 40));
         lblTitle.setHorizontalAlignment(JLabel.CENTER);
         lblTitle.setOpaque(true);
@@ -47,8 +53,7 @@ public class ChatWindow extends JFrame {
 
         JPanel centerPanel = new JPanel(new BorderLayout(10, 10));
         centerPanel.setBorder(BorderFactory.createEmptyBorder(15, 10, 10, 10));
-        
-        chatArea = new JTextArea();
+
         chatArea.setFont(new Font("", Font.PLAIN, 17));
         JScrollPane scrollPane = new JScrollPane(chatArea);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
@@ -77,11 +82,14 @@ public class ChatWindow extends JFrame {
     private void sendMessage() {
         String message = messageField.getText();
         if (!message.isEmpty()) {
+            chatController.broadcastMessage(user.getName(), message);
+            messageField.setText("");
+            messageField.requestFocus();
         }
     }
 
     public void displayMessage(String message) {
-        
+        user.getChatArea().append(message + "\n");
     }
 
     private void addNewUser() {
@@ -92,13 +100,13 @@ public class ChatWindow extends JFrame {
         addSenderFrame.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         addSenderFrame.setVisible(true);
 
-        JLabel lblTitle = new JLabel("Add Sender");
-        lblTitle.setFont(new Font("", 1, 40));
-        lblTitle.setHorizontalAlignment(JLabel.CENTER);
-        lblTitle.setOpaque(true);
-        lblTitle.setBackground(new Color(39, 73, 53));
-        lblTitle.setForeground(Color.WHITE);
-        addSenderFrame.add("North", lblTitle);
+        JLabel lblAddSenderTitle = new JLabel("Add Sender");
+        lblAddSenderTitle.setFont(new Font("", 1, 40));
+        lblAddSenderTitle.setHorizontalAlignment(JLabel.CENTER);
+        lblAddSenderTitle.setOpaque(true);
+        lblAddSenderTitle.setBackground(new Color(39, 73, 53));
+        lblAddSenderTitle.setForeground(Color.WHITE);
+        addSenderFrame.add("North", lblAddSenderTitle);
 
         JPanel addUserPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 10));
         addUserPanel.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
@@ -112,13 +120,17 @@ public class ChatWindow extends JFrame {
         JTextField newUserNameField = new JTextField(15);
         newUserNameField.setFont(new Font("", Font.PLAIN, 17));
         newUserNameField.setPreferredSize(new Dimension(490, 30));
+        newUserNameField.requestFocus();
         addUserPanel.add(newUserNameField);
 
         newUserNameField.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 String userName = newUserNameField.getText();
                 if (!userName.isEmpty()) {
-                    
+                    ChatUser newUser = new ChatUser(userName, chatController);
+                    chatController.addUser(newUser);
+                    newUserNameField.setText("");
+                    addSenderFrame.setVisible(false);
                 }
             }
         });
